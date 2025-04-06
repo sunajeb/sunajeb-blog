@@ -13,7 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold tracking-tight hover:text-gray-600 transition-colors">
-              My Blog
+              Blog
             </Link>
             <nav>
               <Link 
@@ -31,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
       <footer className="border-t border-gray-200 mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} My Blog. All rights reserved.
+          &copy; {new Date().getFullYear()} Sunaje Bhushan. All rights reserved.
         </div>
       </footer>
     </div>
