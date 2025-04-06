@@ -1,22 +1,16 @@
-# Welcome to your Lovable project
+# Sunaje Bhushan's Blog
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/dd16a3ec-14fb-4fa6-b180-b0993d46917f
+Personal blog built with modern web technologies.
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/dd16a3ec-14fb-4fa6-b180-b0993d46917f) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you want to work locally using your own IDE, you can clone this repo and push changes.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -62,12 +56,18 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/dd16a3ec-14fb-4fa6-b180-b0993d46917f) and click on Share -> Publish.
+This project can be deployed on GitHub Pages by following these steps:
 
-## Can I connect a custom domain to my Lovable project?
+1. Make sure your repository settings have GitHub Pages enabled
+2. Ensure the `base` in `vite.config.ts` is set to `'./'`
+3. Run `npm run build` to create the production build
+4. Push the changes to your GitHub repository
 
-Yes it is!
+## Custom Domain
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+To connect a custom domain to your GitHub Pages site:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Navigate to your repository settings
+2. Go to the "Pages" section
+3. Under "Custom domain", enter your domain name
+4. Update your domain's DNS settings to point to GitHub Pages
