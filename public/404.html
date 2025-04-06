@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -11,7 +10,7 @@
       // This script takes the current URL and converts the path and query
       // string into just a query string, and then redirects the browser
       // to the new URL with only a query string and hash fragment.
-      var pathSegmentsToKeep = 0; // Don't keep any segments for a project site
+      var pathSegmentsToKeep = 1; // Keep one segment for a project site (username.github.io/repo-name)
       
       var l = window.location;
       l.replace(
