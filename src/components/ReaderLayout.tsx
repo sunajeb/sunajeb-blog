@@ -6,23 +6,15 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const ReaderLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-white font-['Trebuchet MS', sans-serif]">
       <header className="border-b border-gray-200">
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
-            <Link to="/admin" className="text-2xl font-bold tracking-tight hover:text-gray-600 transition-colors">
+            <Link to="/read" className="text-2xl font-bold tracking-tight hover:text-gray-600 transition-colors">
               Blog
             </Link>
-            <nav>
-              <Link 
-                to="/admin/new" 
-                className="px-4 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition-colors"
-              >
-                Write New Post
-              </Link>
-            </nav>
           </div>
         </div>
       </header>
@@ -38,4 +30,4 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
-export default Layout;
+export default ReaderLayout;

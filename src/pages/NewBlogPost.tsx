@@ -28,7 +28,7 @@ const NewBlogPost = () => {
       title: "Post created",
       description: "Your blog post has been published successfully.",
     });
-    navigate(`/post/${newPost.id}`);
+    navigate(`/admin/post/${newPost.id}`);
   };
 
   return (
@@ -71,7 +71,7 @@ const NewBlogPost = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/admin')}
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancel

@@ -20,7 +20,7 @@ const EditBlogPost = () => {
         setTitle(post.title);
         setContent(post.content);
       } else {
-        navigate('/');
+        navigate('/admin');
       }
     }
   }, [id, navigate]);
@@ -44,7 +44,7 @@ const EditBlogPost = () => {
           title: "Post updated",
           description: "Your blog post has been updated successfully.",
         });
-        navigate(`/post/${updatedPost.id}`);
+        navigate(`/admin/post/${updatedPost.id}`);
       }
     }
   };
@@ -87,7 +87,7 @@ const EditBlogPost = () => {
           <div className="flex justify-end space-x-4">
             <button
               type="button"
-              onClick={() => navigate(`/post/${id}`)}
+              onClick={() => navigate(`/admin/post/${id}`)}
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               Cancel
