@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +18,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={import.meta.env.DEV ? '/' : './'}>
+      <BrowserRouter basename={import.meta.env.DEV ? '/' : '/sunajeb-blog'}>
         <Routes>
           {/* Admin routes */}
           <Route path="/admin" element={<Index />} />
