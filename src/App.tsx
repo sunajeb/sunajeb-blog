@@ -19,7 +19,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.DEV ? '/' : './'}>
         <Routes>
           {/* Admin routes */}
           <Route path="/admin" element={<Index />} />
