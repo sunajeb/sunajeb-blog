@@ -23,9 +23,14 @@ const ReaderLayout: React.FC<LayoutProps> = ({ children }) => {
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
-      <footer className="border-t border-border mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-muted-foreground text-sm">
-          &copy; {new Date().getFullYear()} Sunaje Bhushan. All rights reserved.
+      <footer className="border-t border-gray-200 mt-12">
+        <div className="container mx-auto px-4 py-6 text-center text-gray-500 text-sm">
+          <p>&copy; {new Date().getFullYear()} Sunaje Bhushan. All rights reserved.</p>
+          <p className="mt-2">
+            <a href="https://www.linkedin.com/in/sunaje-bhushan/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 transition-colors duration-150">LinkedIn</a>
+            <span className="mx-2">|</span>
+            <a href="https://x.com/BhushanSunaje" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 transition-colors duration-150">X (Twitter)</a>
+          </p>
         </div>
       </footer>
     </div>
