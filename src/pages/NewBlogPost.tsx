@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { addBlogPost } from '../services/blogService';
@@ -8,32 +8,12 @@ import { useToast } from '@/components/ui/use-toast';
 const NewBlogPost = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const password = window.prompt("Enter password to manage posts:");
-    if (password === "ejanus") {
-      setIsAuthenticated(true);
-    } else {
-      alert("Incorrect password.");
-      navigate('/admin');
-    }
-  }, [navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Error",
-        description: "You are not authorized to perform this action.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!title.trim() || !content.trim()) {
       toast({
         title: "Validation Error",
@@ -50,16 +30,6 @@ const NewBlogPost = () => {
     });
     navigate(`/admin/post/${newPost.id}`);
   };
-
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <div className="max-w-3xl mx-auto text-center py-10">
-          <p>Authentication required to access this page.</p>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
