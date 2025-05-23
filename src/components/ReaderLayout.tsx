@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,13 +9,14 @@ interface LayoutProps {
 
 const ReaderLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-white font-['Trebuchet MS', sans-serif]">
-      <header className="border-b border-gray-200">
+    <div className="min-h-screen bg-background font-['Trebuchet MS', sans-serif]">
+      <header className="border-b border-border">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <Link to="/read" className="text-2xl font-bold tracking-tight hover:text-gray-600 transition-colors">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <Link to="/read" className="text-2xl font-bold tracking-tight hover:text-accent-foreground transition-colors mb-4 sm:mb-0">
               Blog
             </Link>
+            <ThemeSwitcher />
           </div>
         </div>
       </header>
