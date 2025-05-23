@@ -12,20 +12,9 @@ const EditBlogPost = () => {
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    const password = window.prompt("Enter password to manage posts:");
-    if (password === "ejanus") {
-      setIsAuthenticated(true);
-    } else {
-      alert("Incorrect password.");
-      navigate('/admin');
-    }
-  }, [navigate]);
-  
-  useEffect(() => {
-    if (isAuthenticated && id) {
+    if (id) {
       const post = getBlogPostById(id);
       if (post) {
         setTitle(post.title);
@@ -34,19 +23,10 @@ const EditBlogPost = () => {
         navigate('/admin');
       }
     }
-  }, [id, navigate, isAuthenticated]);
+  }, [id, navigate]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Error",
-        description: "You are not authorized to perform this action.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     if (!title.trim() || !content.trim()) {
       toast({
@@ -68,16 +48,6 @@ const EditBlogPost = () => {
       }
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <div className="max-w-3xl mx-auto text-center py-10">
-          <p>Authentication required to access this page.</p>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
