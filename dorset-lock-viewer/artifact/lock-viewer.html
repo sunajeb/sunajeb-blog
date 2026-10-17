@@ -1,0 +1,330 @@
+<title>Dorset Lock Viewer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one phone-first column. A matte-black "faceplate" status card modeled on
+     the lock, then the entry log grouped by day, then the raw values the lock reports. */
+  :root {
+    --bg: #eceeef;
+    --surface: #ffffff;
+    --fg: #16181a;
+    --muted: #5b636a;
+    --line: #dadde0;
+    --chip: #f0f2f3;
+    --accent: #8f6118;
+    --plate: #151617;
+    --plate-fg: #ecebe7;
+    --plate-muted: #9d9b96;
+    --plate-line: #2b2c2e;
+    --lens: #2c4a63;
+    --ok: #1d7a4b;
+    --warn: #9a5a00;
+    --alert: #b3261e;
+    --font-ui: "Onest", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --r: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d0e0f; --surface: #16181a; --fg: #e7e8e9; --muted: #9aa1a8; --line: #26292c;
+      --chip: #1f2225; --accent: #d7a34f; --plate: #1d1f21; --plate-fg: #ecebe7;
+      --plate-muted: #9d9b96; --plate-line: #33363a; --lens: #3d6587;
+      --ok: #4cc38a; --warn: #e4a43c; --alert: #f2766b; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d0e0f; --surface: #16181a; --fg: #e7e8e9; --muted: #9aa1a8; --line: #26292c;
+    --chip: #1f2225; --accent: #d7a34f; --plate: #1d1f21; --plate-fg: #ecebe7;
+    --plate-muted: #9d9b96; --plate-line: #33363a; --lens: #3d6587;
+    --ok: #4cc38a; --warn: #e4a43c; --alert: #f2766b; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 15px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; display: grid; gap: 20px; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -.015em; margin: 2px 0 0; text-wrap: balance; }
+  h2 { font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 0; }
+
+  /* Faceplate */
+  .plate {
+    background: var(--plate); color: var(--plate-fg); border: 1px solid var(--plate-line);
+    border-radius: 22px; padding: 18px 20px 20px; display: grid; gap: 18px;
+  }
+  .plate-top { display: flex; justify-content: center; }
+  .lens {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--lens), #050607 70%);
+    box-shadow: 0 0 0 3px #000, 0 0 0 4px var(--plate-line);
+  }
+  .state { display: flex; align-items: center; gap: 12px; }
+  .state-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--plate-muted); flex: none; }
+  .state-dot.ok { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 25%, transparent); }
+  .state-dot.alert { background: var(--alert); }
+  .state-dot.warn { background: var(--warn); }
+  .state-title { font-size: 24px; font-weight: 650; letter-spacing: -.015em; line-height: 1.2; }
+  .state-sub { color: var(--plate-muted); font-size: 13px; }
+  .readouts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--plate-line); padding-top: 14px; gap: 8px; }
+  .readout { min-width: 0; }
+  .readout .k { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--plate-muted); }
+  .readout .v { font-family: var(--font-data); font-size: 15px; font-variant-numeric: tabular-nums; margin-top: 2px; overflow-wrap: anywhere; }
+
+  .notice { border-radius: var(--r); padding: 12px 14px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 4px; }
+  .notice.warn { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
+  .notice.alert { border-color: color-mix(in srgb, var(--alert) 45%, var(--line)); }
+  .notice b { font-weight: 600; }
+  .notice .detail { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+
+  /* Entry log */
+  .log { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 6px 16px 10px; }
+  .log-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0 4px; }
+  .log-head .count { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+  .day { font-size: 12px; font-weight: 600; color: var(--muted); padding: 14px 0 4px; }
+  .entries { list-style: none; margin: 0; padding: 0; }
+  .entry { display: grid; grid-template-columns: 52px 30px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .day + .entries .entry:first-child { border-top: 0; }
+  .entry time { font-family: var(--font-data); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .icon { width: 30px; height: 30px; border-radius: 8px; background: var(--chip); color: var(--accent); display: grid; place-items: center; }
+  .icon svg { width: 17px; height: 17px; }
+  .what { min-width: 0; }
+  .what .m { font-weight: 600; }
+  .what .who { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+  .empty { padding: 22px 4px 18px; color: var(--muted); display: grid; gap: 6px; }
+  .empty b { color: var(--fg); font-weight: 600; }
+
+  details.raw { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 16px; }
+  details.raw summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  details.raw summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+  .raw-note { color: var(--muted); font-size: 13px; margin: 8px 0 4px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-family: var(--font-data); font-size: 13px; }
+  td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--muted); white-space: nowrap; }
+
+  footer { color: var(--muted); font-size: 12px; display: grid; gap: 4px; text-align: center; }
+  @media (max-width: 380px) { .readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Front door · view-only</div>
+    <h1>Dorset Lock Viewer</h1>
+  </header>
+
+  <section class="plate" aria-live="polite" aria-label="Lock status">
+    <div class="plate-top"><span class="lens" aria-hidden="true"></span></div>
+    <div class="state">
+      <span class="state-dot" id="stateDot"></span>
+      <div>
+        <div class="state-title" id="stateTitle">Waiting for the first sync</div>
+        <div class="state-sub" id="stateSub">No lock data has been loaded into this page yet.</div>
+      </div>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="k">Battery</div><div class="v" id="battery">–</div></div>
+      <div class="readout"><div class="k">Door</div><div class="v" id="door">–</div></div>
+      <div class="readout"><div class="k">Last sync</div><div class="v" id="synced">never</div></div>
+    </div>
+  </section>
+
+  <div class="notice warn" id="notice" hidden>
+    <b id="noticeTitle"></b>
+    <div class="detail" id="noticeDetail"></div>
+  </div>
+
+  <section class="log" aria-label="Entry log">
+    <div class="log-head">
+      <h2>Entry log</h2>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="logBody">
+      <div class="empty">
+        <b>No entries yet.</b>
+        <span>Once your Tuya developer account is linked, Claude copies the lock's entry history here: who came in, how (fingerprint, PIN, card or app) and when.</span>
+      </div>
+    </div>
+  </section>
+
+  <details class="raw" id="rawBox" hidden>
+    <summary>Everything the lock reports</summary>
+    <p class="raw-note">Raw values from Tuya Cloud. Used to label fields correctly for this lock model.</p>
+    <div class="table-wrap"><table><tbody id="rawRows"></tbody></table></div>
+  </details>
+
+  <footer>
+    <span>This page can only show information. It cannot unlock the door.</span>
+    <span>Data is copied from Tuya Cloud when Claude syncs it, so it is not live.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var STALE_MS = 3 * 60 * 60 * 1000;
+  var doc = null;
+  var dbState = "loading";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var ICONS = {
+    fingerprint: '<path d="M7 11a5 5 0 0 1 10 0c0 3-.5 5-1.5 7"/><path d="M12 11c0 3-.4 6-2 8.5"/><path d="M9.5 11a2.5 2.5 0 0 1 5 0c0 2-.3 3.6-.8 5"/><path d="M4.5 13a7.5 7.5 0 0 1 13.6-6"/>',
+    keypad: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h.01M12 8h.01M15 8h.01M9 12h.01M12 12h.01M15 12h.01M12 16h.01"/>',
+    card: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 14h4"/><path d="M15.5 10.5a2.5 2.5 0 0 1 0 3M17.5 9a5 5 0 0 1 0 6"/>',
+    phone: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
+    key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/>',
+    face: '<circle cx="12" cy="12" r="8.5"/><path d="M9 10h.01M15 10h.01M9 15c1.7 1.3 4.3 1.3 6 0"/>',
+    dot: '<circle cx="12" cy="12" r="3.5"/>'
+  };
+
+  function iconFor(code) {
+    var c = String(code || "").toLowerCase();
+    var k = "dot";
+    if (c.indexOf("finger") >= 0) k = "fingerprint";
+    else if (/password|temporary|dynamic|pin/.test(c)) k = "keypad";
+    else if (c.indexOf("card") >= 0) k = "card";
+    else if (/app|remote|ble|phone/.test(c)) k = "phone";
+    else if (c.indexOf("key") >= 0) k = "key";
+    else if (c.indexOf("face") >= 0) k = "face";
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + "</svg>";
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+  }
+
+  function ago(ms) {
+    if (!ms) return "never";
+    var d = Date.now() - ms;
+    if (d < 60000) return "just now";
+    if (d < 3600000) return Math.round(d / 60000) + " min ago";
+    if (d < 86400000) return Math.round(d / 3600000) + " h ago";
+    return new Date(ms).toLocaleDateString([], { day: "numeric", month: "short" });
+  }
+
+  function hhmm(ms) {
+    return new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function dayLabel(ms) {
+    var d = new Date(ms), now = new Date();
+    var y = new Date(now); y.setDate(now.getDate() - 1);
+    if (d.toDateString() === now.toDateString()) return "Today";
+    if (d.toDateString() === y.toDateString()) return "Yesterday";
+    return d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" });
+  }
+
+  function fmtValue(dp) {
+    if (!dp) return "–";
+    var v = dp.value;
+    if (typeof v === "number" && /battery|electric/.test(dp.code)) return v + "%";
+    if (v === "closed" || v === "close") return "Closed";
+    if (v === "open" || v === "opened") return "Open";
+    if (typeof v === "string") return v.charAt(0).toUpperCase() + v.slice(1);
+    return String(v);
+  }
+
+  function renderStatus() {
+    var dot = $("stateDot"), title = $("stateTitle"), sub = $("stateSub");
+    if (!doc) {
+      dot.className = "state-dot";
+      title.textContent = dbState === "unavailable" ? "Data not available here" : "Waiting for the first sync";
+      sub.textContent = dbState === "unavailable"
+        ? "Open this page in claude.ai to load the lock's data."
+        : "No lock data has been loaded into this page yet.";
+      $("battery").textContent = "–"; $("door").textContent = "–"; $("synced").textContent = "never";
+      return;
+    }
+    var dev = doc.device || {};
+    var st = doc.status || {};
+    var tampered = st.tamper && (st.tamper.value === true || st.tamper.value === "1");
+    if (tampered) { dot.className = "state-dot alert"; title.textContent = "Alert from the lock"; }
+    else if (dev.online === true) { dot.className = "state-dot ok"; title.textContent = "Online"; }
+    else if (dev.online === false) { dot.className = "state-dot alert"; title.textContent = "Offline"; }
+    else { dot.className = "state-dot warn"; title.textContent = "Status unknown"; }
+    sub.textContent = [dev.name, dev.model].filter(Boolean).join(" · ") || "Dorset smart lock";
+    $("battery").textContent = fmtValue(st.battery);
+    $("door").textContent = fmtValue(st.closed);
+    $("synced").textContent = ago(doc.syncedAt);
+  }
+
+  function renderNotice() {
+    var box = $("notice");
+    var errs = (doc && doc.errors) || [];
+    if (doc && errs.length) {
+      box.className = "notice alert";
+      $("noticeTitle").textContent = "The last sync could not read everything";
+      $("noticeDetail").textContent = errs.map(function (e) { return e.step + ": " + e.message; }).join(" · ");
+      box.hidden = false;
+    } else if (doc && doc.syncedAt && Date.now() - doc.syncedAt > STALE_MS) {
+      box.className = "notice warn";
+      $("noticeTitle").textContent = "This information is out of date";
+      $("noticeDetail").textContent = "Last synced " + ago(doc.syncedAt) + ". Newer entries will appear after the next sync.";
+      box.hidden = false;
+    } else {
+      box.hidden = true;
+    }
+  }
+
+  function renderLog() {
+    var body = $("logBody");
+    var entries = (doc && doc.entries) || [];
+    $("count").textContent = entries.length ? entries.length + (entries.length === 1 ? " entry" : " entries") : "";
+    if (!doc) return; // keep the designed empty state
+    if (!entries.length) {
+      body.innerHTML = '<div class="empty"><b>No entries in the last 7 days.</b><span>New entries will show here after the next sync.</span></div>';
+      return;
+    }
+    var html = "", lastDay = null;
+    entries.forEach(function (e) {
+      var label = e.time ? dayLabel(e.time) : "Unknown date";
+      if (label !== lastDay) {
+        if (lastDay !== null) html += "</ul>";
+        html += '<div class="day">' + esc(label) + '</div><ul class="entries">';
+        lastDay = label;
+      }
+      html += '<li class="entry">' +
+        '<time>' + (e.time ? esc(hhmm(e.time)) : "–") + "</time>" +
+        '<span class="icon">' + iconFor(e.methodCode || e.method) + "</span>" +
+        '<div class="what"><div class="m">' + esc(e.method || "Unknown") + "</div>" +
+        (e.who ? '<div class="who">' + esc(e.who) + "</div>" : "") + "</div></li>";
+    });
+    body.innerHTML = html + "</ul>";
+  }
+
+  function renderRaw() {
+    var raw = (doc && doc.raw) || [];
+    $("rawBox").hidden = !raw.length;
+    $("rawRows").innerHTML = raw.map(function (dp) {
+      return "<tr><td>" + esc(dp.code) + "</td><td>" + esc(JSON.stringify(dp.value)) + "</td></tr>";
+    }).join("");
+  }
+
+  function render() { renderStatus(); renderNotice(); renderLog(); renderRaw(); }
+
+  render();
+  setInterval(function () { if (doc) { renderStatus(); renderNotice(); } }, 60000);
+
+  var api = window.claude && window.claude.use ? window.claude.use("db") : Promise.resolve(null);
+  api.then(function (db) {
+    if (!db) { dbState = "unavailable"; render(); return; }
+    db.doc("lock/state").onSnapshot(function (snap) {
+      doc = snap.exists ? snap.data() : null;
+      dbState = "ready";
+      render();
+    }, function () {
+      dbState = "unavailable";
+      render();
+    });
+  }, function () { dbState = "unavailable"; render(); });
+})();
+</script>

@@ -2,6 +2,7 @@
   "name": "dorset-lock-viewer-worker",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Read-only backend that signs Tuya Cloud API requests for the Dorset Lock Viewer.",
   "scripts": {
     "dev": "wrangler dev",
