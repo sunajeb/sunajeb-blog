@@ -1,0 +1,14 @@
+name = "dorset-lock-viewer"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+
+# Non-secret config. Fill these in (or set in the Cloudflare dashboard).
+[vars]
+TUYA_ENDPOINT = "https://openapi.tuyain.com"   # India Data Center
+TUYA_DEVICE_ID = ""                            # your lock's device_id (from Tuya IoT platform)
+ALLOWED_ORIGIN = "*"                           # lock to your UI origin, e.g. https://<your-artifact>.claude.site
+
+# Secrets are NOT stored here. Set them with:
+#   wrangler secret put TUYA_ACCESS_ID
+#   wrangler secret put TUYA_ACCESS_SECRET
+#   wrangler secret put APP_TOKEN

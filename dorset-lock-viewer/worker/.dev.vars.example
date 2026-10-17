@@ -1,0 +1,4 @@
+# Copy to `.dev.vars` for local `wrangler dev`. NEVER commit the real .dev.vars.
+TUYA_ACCESS_ID = "your-tuya-cloud-access-id"
+TUYA_ACCESS_SECRET = "your-tuya-cloud-access-secret"
+APP_TOKEN = "make-a-long-random-string"
