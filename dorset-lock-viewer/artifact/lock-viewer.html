@@ -251,7 +251,8 @@
     else if (dev.online === true) { dot.className = "state-dot ok"; title.textContent = "Online"; }
     else if (dev.online === false) { dot.className = "state-dot alert"; title.textContent = "Offline"; }
     else { dot.className = "state-dot warn"; title.textContent = "Status unknown"; }
-    sub.textContent = [dev.name, dev.model].filter(Boolean).join(" · ") || "Dorset smart lock";
+    sub.textContent = [dev.name, dev.model].filter(Boolean).join(" · ") ||
+      (doc.device ? "Dorset smart lock" : "Tuya Cloud did not return this lock's details");
     $("battery").textContent = fmtValue(st.battery);
     $("door").textContent = fmtValue(st.closed);
     $("synced").textContent = ago(doc.syncedAt);
@@ -280,6 +281,10 @@
     var entries = (doc && doc.entries) || [];
     $("count").textContent = entries.length ? entries.length + (entries.length === 1 ? " entry" : " entries") : "";
     if (!doc) return; // keep the designed empty state
+    if (!Array.isArray(doc.entries)) {
+      body.innerHTML = '<div class="empty"><b>The entry log could not be read.</b><span>Tuya Cloud refused the request, so it is not known who came in. See the notice above.</span></div>';
+      return;
+    }
     if (!entries.length) {
       body.innerHTML = '<div class="empty"><b>No entries in the last 7 days.</b><span>New entries will show here after the next sync.</span></div>';
       return;
